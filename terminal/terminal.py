@@ -410,15 +410,15 @@ You should enter the markdown text to be inserted and the index of the cell you 
 
     def get_run_code_cell_tool(self, default_ws):
         return StructuredTool.from_function(
-            func=lambda index, filename=None: self.run_code_code_cell_tool(default_ws, index, filename),
-            coroutine=lambda index, filename=None: self.run_code_code_cell_tool(default_ws, index, filename),
-            name="run_code_code_cell_tool",
+            func=lambda index, filename=None: self.run_code_cell_tool(default_ws, index, filename),
+            coroutine=lambda index, filename=None: self.run_code_cell_tool(default_ws, index, filename),
+            name="run_code_cell_tool",
             description="""Useful when you want to run a code cell in a Jupyter notebook. If no filename is given the active notebook will be used.
 The tool outputs the result of the execution. You should enter the index of the cell you want to run.""",
             args_schema=RunCellInput
         )
 
-    async def run_code_code_cell_tool(self, default_ws, index, filename):
+    async def run_code_cell_tool(self, default_ws, index, filename):
         try:
             request = {
                 "request": {"index": index, "filename": filename}, 
@@ -462,15 +462,15 @@ This tool cannot delete files! You should enter the index of the cell you want t
 
     def get_read_notebook_summary(self, default_ws):
         return StructuredTool.from_function(
-            func=lambda filename=None: self.read_notebook_summary(default_ws, filename),
-            coroutine=lambda filename=None: self.read_notebook_summary(default_ws, filename),
-            name="read_notebook_summary",
+            func=lambda filename=None: self.read_notebook_summary_tool(default_ws, filename),
+            coroutine=lambda filename=None: self.read_notebook_summary_tool(default_ws, filename),
+            name="read_notebook_summary_tool",
             description="""Useful when you want to get a summary of the whole notebook to see whats in each cell and its outputs.
 If you give no filename the active notebook will be used.You should enter the filename of the notebook.""",
             args_schema=ReadNotebookInput
         )
 
-    async def read_notebook_summary(self, default_ws, filename):
+    async def read_notebook_summary_tool(self, default_ws, filename):
         try:
             request = {
                 "request": {"filename": filename}, 

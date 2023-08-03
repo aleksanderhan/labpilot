@@ -450,6 +450,7 @@ export class XtermWidget extends Widget {
         await sleep(500) // Waiting for outputs to settle
         
         const output = getCellOutput(activeCell.model)
+        console.log(output)
         data = {
           "message": {
             "output": output.outputText,
