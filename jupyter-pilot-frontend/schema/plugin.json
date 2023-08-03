@@ -1,0 +1,9 @@
+{
+  "title": "Labpilot",
+  "description": "Labpilot extension.",
+  "jupyter.lab.menus": {
+    "main": []
+  },
+  "additionalProperties": false,
+  "type": "object"
+}

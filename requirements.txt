@@ -1,0 +1,11 @@
+ipywidgets
+jupyter_kernel_gateway
+tiktoken
+openai
+backoff
+milvus
+langchain==0.0.251
+pydantic
+websockets
+faiss-cpu
+nbformat

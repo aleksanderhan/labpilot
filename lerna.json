@@ -1,0 +1,8 @@
+{
+  "packages": [
+    "jupyter-pilot-frontend",
+  ],
+  "npmClient": "jlpm",
+  "useWorkspaces": true,
+  "version": "independent"
+}

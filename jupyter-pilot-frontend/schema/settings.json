@@ -1,0 +1,24 @@
+{
+    "title": "Labpilot Settings",
+    "description": "Settings for Labpilot",
+    "type": "object",
+    "properties": {
+        "llm_backend": {
+            "type": "string",
+            "title": "LLM backend",
+            "default": "gpt-3.5-turbo-16k",
+            "enum": ["gpt-3.5-turbo", "gpt-3.5-turbo-16k", "gpt-4"],
+            "enumNames": ["gpt-3.5-turbo", "gpt-3.5-turbo-16k", "gpt-4"]
+        },
+        "llm_temp": {
+            "type": "number",
+            "title": "Temperature [0, 2]",
+            "default": 1
+        },
+        "openai_api_key": {
+            "type": "string",
+            "title": "OpenAI API key",
+            "default": ""
+        }
+    }
+}

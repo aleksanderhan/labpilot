@@ -1,0 +1,4 @@
+.refactor-cell-button::before {
+  content: attr(data-label);
+  pointer-events: none; /* Prevents the label from interfering with button clicks */
+}
