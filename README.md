@@ -2,7 +2,15 @@
 Copilot for jupyter lab
 
 We are bringing "comment driven development" back in vouge and brushing off it's bad reputation!
+
+Refactor feature:
 ![Refactor example](docs/refactor.gif)
+
+Bugs in your code?
+![Debug example](docs/debug.gif)
+
+Need an explanation?
+![Explain example](docs/explain.gif)
 
 ## How to build and run
 Right now the easiest way to use this extension is to build and run the Dockerfile:
