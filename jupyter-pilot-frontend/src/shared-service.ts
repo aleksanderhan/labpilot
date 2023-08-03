@@ -4,6 +4,7 @@ export default class SharedService {
 
     private temp: number;
     private model: string;
+    private openai_api_key: string;
 
     constructor(model: string, temp: number) {
         this.model = model;
@@ -24,5 +25,13 @@ export default class SharedService {
 
     public getModel(): string {
         return this.model;
+    }
+
+    public setOpenAIAPIKey(api_key: string): void {
+        this.openai_api_key = api_key;
+    }
+
+    public getOpenAIAPIKey(): string {
+        return this.openai_api_key;
     }
 }

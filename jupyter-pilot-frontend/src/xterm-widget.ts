@@ -4,14 +4,13 @@ import { FitAddon } from 'xterm-addon-fit'
 import { WebLinksAddon } from 'xterm-addon-web-links'
 
 import {
-  NotebookPanel,
   INotebookTracker,
   NotebookModel
 } from '@jupyterlab/notebook'
 import {
   JupyterFrontEnd
 } from '@jupyterlab/application'
-import { CellModel, CodeCellModel, MarkdownCellModel, Cell, CodeCell, ICellModel, RawCellModel } from "@jupyterlab/cells"
+import { CodeCellModel, MarkdownCellModel } from "@jupyterlab/cells"
 
 
 import SharedService from './shared-service'
@@ -664,7 +663,8 @@ export class XtermWidget extends Widget {
               const data = { 
                 "message": this.curr_line,
                 "model": this.sharedService.getModel(), 
-                "temp": this.sharedService.getTemp()
+                "temp": this.sharedService.getTemp(),
+                "openai_api_key": this.sharedService.getOpenAIAPIKey()
               }
               this.term.write("\n")
               this.ws.send(JSON.stringify(data))

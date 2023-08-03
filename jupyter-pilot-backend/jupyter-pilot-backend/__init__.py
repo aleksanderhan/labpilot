@@ -25,8 +25,6 @@ tracemalloc.start()
 
 langchain.debug = True
 
-openai.api_key = os.environ["OPENAI_API_KEY"]
-
 
 class DefaultCallbackHandler(BaseCallbackHandler):
     def __init__(self, writer):
@@ -85,13 +83,14 @@ class RefactorWebSocketHandler(tornado.websocket.WebSocketHandler):
         model = data.get('model', 'gpt-3.5-turbo')
         temp = data.get('temp', 1)
         cell_id = data.get("cellId", None)
+        openai_api_key = data.get("openai_api_key", None)
 
         memory = self.cells.get(cell_id)
         if not memory:
             memory = ConversationBufferWindowMemory(k=3, memory_key="memory", return_messages=True)
             self.cells[cell_id] = memory
 
-        llm = ChatOpenAI(model=model, temperature=temp, streaming=True, callbacks=[DefaultCallbackHandler(self.write_message)])
+        llm = ChatOpenAI(openai_api_key=openai_api_key, model=model, temperature=temp, streaming=True, callbacks=[DefaultCallbackHandler(self.write_message)])
         
         prompt_template = PromptTemplate(input_variables=["memory", "code"], template=refactor_template)
         chain = LLMChain(
@@ -116,8 +115,9 @@ class DebugWebSocketHandler(tornado.websocket.WebSocketHandler):
         error = data.get('error', 'No error provided')
         model = data.get('model', 'gpt-3.5-turbo')
         temp = data.get('temp', 1)
+        openai_api_key = data.get("openai_api_key", None)
 
-        llm = ChatOpenAI(model=model, temperature=temp, streaming=True, callbacks=[DefaultCallbackHandler(self.write_message)])
+        llm = ChatOpenAI(openai_api_key=openai_api_key, model=model, temperature=temp, streaming=True, callbacks=[DefaultCallbackHandler(self.write_message)])
         
         debug_prompt_template = PromptTemplate(input_variables=["code", "output", "error"], template=debug_template)
         debug_chain = LLMChain(
@@ -157,8 +157,9 @@ class ExplainWebSocketHandler(tornado.websocket.WebSocketHandler):
         code = data.get('code', 'No code provided')
         model = data.get('model', 'gpt-3.5-turbo')
         temp = data.get('temp', 1)
+        openai_api_key = data.get("openai_api_key", None)
 
-        llm = ChatOpenAI(model=model, temperature=temp, streaming=True, callbacks=[DefaultCallbackHandler(self.write_message)])
+        llm = ChatOpenAI(openai_api_key=openai_api_key, model=model, temperature=temp, streaming=True, callbacks=[DefaultCallbackHandler(self.write_message)])
         
         prompt_template = PromptTemplate(input_variables=["code"], template=explain_template)
         chain = LLMChain(

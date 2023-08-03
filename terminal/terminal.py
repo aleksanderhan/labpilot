@@ -30,8 +30,6 @@ tracemalloc.start()
 
 langchain.debug = True
 
-openai.api_key = os.environ["OPENAI_API_KEY"]
-
 
 class SharedState:
     def __init__(self):
@@ -117,13 +115,13 @@ class Terminal(object):
         self.secondary_ws = await websockets.serve(self.secondary_web_socket, "0.0.0.0", 8081)
         await self.primary_ws.wait_closed()
 
-    def create_agent(self, websocket, model, temp):
+    def create_agent(self, websocket, model, temp, openai_api_key):
         model += "-0613" # Better functions calling model
         self.model = model
         self.temp = temp
 
         callback=DefaultCallbackHandler(websocket)
-        llm = ChatOpenAI(model=model, temperature=temp, streaming=True, callbacks=[callback])
+        llm = ChatOpenAI(openai_api_key=openai_api_key, model=model, temperature=temp, streaming=True, callbacks=[callback])
         tools = [
             ShellTool(name="shell_tool"),
             self.get_select_option_tool(websocket),
@@ -171,7 +169,7 @@ class Terminal(object):
         if data.get("method") == "clear":
             self.chat_history_memory = ConversationBufferMemory(memory_key="memory", return_messages=True)
         else:
-            self.create_agent(websocket, data["model"], data["temp"])
+            self.create_agent(websocket, data["model"], data["temp"], data["openai_api_key"])
             try:
                 await self.agent.arun(data["message"])
             except Exception as e:

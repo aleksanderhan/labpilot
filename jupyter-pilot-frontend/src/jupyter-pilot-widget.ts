@@ -33,13 +33,11 @@ export class ToolbarWidget
   implements DocumentRegistry.IWidgetExtension<NotebookPanel, INotebookModel>
 {
 
-  private logger?: LogFunction;
   private sharedService: SharedService;
   private notebookTracker: INotebookTracker;
   private app: JupyterFrontEnd;
 
-  constructor(logger?: LogFunction, sharedService?: SharedService, notebookTracker?: INotebookTracker, app?: JupyterFrontEnd) {
-    this.logger = logger;
+  constructor(sharedService?: SharedService, notebookTracker?: INotebookTracker, app?: JupyterFrontEnd) {
     this.sharedService = sharedService;
     this.notebookTracker = notebookTracker;
     this.app = app;
@@ -58,7 +56,7 @@ export class ToolbarWidget
     // Refactor button
     const refactorAction = () => {
       const refactor = new Refactorer();
-      refactor.refactorCell(panel, this.logger, this.sharedService.getModel(), this.sharedService.getTemp());
+      refactor.refactorCell(panel, this.sharedService.getModel(), this.sharedService.getTemp(), this.sharedService.getOpenAIAPIKey());
     };
 
     const refactorButton = new ToolbarButton({
@@ -71,7 +69,7 @@ export class ToolbarWidget
     // Debug button
     const debugAction = () => {
       const debug = new Debugger();
-      debug.debugCellOutput(panel, this.logger, this.sharedService.getModel(), this.sharedService.getTemp());
+      debug.debugCellOutput(panel, this.sharedService.getModel(), this.sharedService.getTemp(), this.sharedService.getOpenAIAPIKey());
     };
 
     const debugButton = new ToolbarButton({
@@ -84,7 +82,7 @@ export class ToolbarWidget
     // Explain button
     const explainAction = () => {
       const explain = new Explainer();
-      explain.explainCode(panel, this.logger, this.sharedService.getModel(), this.sharedService.getTemp(), this.notebookTracker, this.app);
+      explain.explainCode(panel, this.sharedService.getModel(), this.sharedService.getTemp(), this.sharedService.getOpenAIAPIKey(), this.notebookTracker, this.app);
     };
 
     const explainButton = new ToolbarButton({
@@ -139,7 +137,7 @@ class Refactorer {
 
   private ws: WebSocket;
 
-  public refactorCell(notebookPanel: NotebookPanel, logger: LogFunction, model: string, temp: number) {
+  public refactorCell(notebookPanel: NotebookPanel, model: string, temp: number, openai_api_key: string) {
     console.log("REFACTOR - using model: " + model)
     const activeCell = notebookPanel.content.activeCell as CodeCell
     const cellModel = activeCell.model as CodeCellModel
@@ -169,7 +167,8 @@ class Refactorer {
           code: initial_code,
           model: model,
           temp: temp,
-          cellId: (cellModel as any).uniqueId
+          cellId: (cellModel as any).uniqueId,
+          openai_api_key: openai_api_key
         };
         this.ws.send(JSON.stringify(data))
       };
@@ -203,7 +202,7 @@ class Debugger {
   private secondPass: boolean = false
   private explanation: string
 
-  public debugCellOutput(notebookPanel: NotebookPanel, logger: LogFunction, model: string, temp: number) {
+  public debugCellOutput(notebookPanel: NotebookPanel, model: string, temp: number, openai_api_key: string) {
     console.log("DEBUG - using model: " + model)
     const activeCell = notebookPanel.content.activeCell as CodeCell
     const cellModel = activeCell.model as CodeCellModel
@@ -231,7 +230,8 @@ class Debugger {
           output: output.outputText,
           error: output.errorText,
           model: model,
-          temp: temp
+          temp: temp,
+          openai_api_key: openai_api_key
         };
         this.ws.send(JSON.stringify(data))
       };
@@ -275,7 +275,7 @@ class Explainer {
   private explanationCell: any;
   private ws: WebSocket;
 
-  public explainCode(notebookPanel: NotebookPanel, logger: LogFunction, model: string, temp: number, notebookTracker: INotebookTracker, app: JupyterFrontEnd) {
+  public explainCode(notebookPanel: NotebookPanel, model: string, temp: number, openai_api_key: string, notebookTracker: INotebookTracker, app: JupyterFrontEnd) {
     console.log("EXPLAIN - using model:" + model);
     const activeCell = notebookPanel.content.activeCell as CodeCell;
     const cellModel = activeCell.model as CodeCellModel;
@@ -291,7 +291,8 @@ class Explainer {
         const data = {
           code: code,
           model: model,
-          temp: temp
+          temp: temp,
+          openai_api_key: openai_api_key
         };
         this.ws.send(JSON.stringify(data));
       };
