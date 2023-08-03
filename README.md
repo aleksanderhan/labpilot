@@ -1,6 +1,8 @@
 # labpilot
 Copilot for jupyter lab
 
+We are bringing "comment driven development" back in vouge and brushing off it's bad reputation!
+![Refactor example](docs/refactor.gif)
 
 ## How to build and run
 Right now the easiest way to use this extension is to build and run the Dockerfile:
@@ -11,5 +13,5 @@ Right now the easiest way to use this extension is to build and run the Dockerfi
 
 ## How to use labpilot
 - When you have started the container, navigate to localhost:8888 and use the `<TOKEN>` you started the container with, to log in.
-- Next, navigate to Settings > Advanced Setting Editor > Labpilot settings - and enter your OpenAI api key: ![Settings](docs/settings.png)
-- After that I would follow the tutorial in the `tutorial.ipynb` file for a short introduction to labpilots features.
+- Next, navigate to Settings > Advanced Setting Editor > Labpilot Settings - and enter your OpenAI api key: ![Settings](docs/settings.png)
+- After that I would follow the tutorial in the `tutorial.ipynb` file for a short introduction to labpilots features: ![Tutorial](docs/tutorial.png)
