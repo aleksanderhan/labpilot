@@ -1,14 +1,16 @@
+import json
+import os
+import openai
+import asyncio
+import multiprocessing
+import langchain
+import tornado.web
+import tornado.websocket
+import tornado.ioloop
 from notebook.utils import url_path_join
 from notebook.base.handlers import IPythonHandler
 from tornado.web import authenticated
 from typing import List, Dict, Any, Union
-import tornado.ioloop
-import tornado.web
-import tornado.websocket
-import json
-import os
-import openai
-import langchain
 from langchain.chains.sequential import SequentialChain
 from langchain.llms import OpenAI
 from langchain.chains import LLMChain
@@ -19,6 +21,7 @@ from langchain.chat_models import ChatOpenAI
 from langchain.memory import ConversationBufferWindowMemory
 
 from .prompt import debug_template, debug_explain_template, explain_template, refactor_template
+from .terminal.terminal import Terminal
 
 import tracemalloc
 tracemalloc.start()
@@ -197,4 +200,9 @@ def load_jupyter_server_extension(nbapp):
     for kernel_id in kernel_ids:
         kernel = kernel_manager.get_kernel(kernel_id)
         print("kernel_name:", kernel.kernel_name)
+
+
+    term = Terminal()
+    process = multiprocessing.Process(target=lambda: asyncio.run(term.start()))
+    process.start()
 

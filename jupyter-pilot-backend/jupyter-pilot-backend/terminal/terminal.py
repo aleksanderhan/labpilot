@@ -20,9 +20,9 @@ from typing import List, Dict, Any, Union, Optional
 from pydantic import BaseModel, Field, BaseSettings
 from notebook.services.contents.filemanager import FileContentsManager
 
-from prompt import agent_system_message, read_notebook_summary_template
-from callback import DefaultCallbackHandler, PrintCallbackHandler
-from agent import OpenAIMultiFunctionsAgent
+from .prompt import agent_system_message, read_notebook_summary_template
+from .callback import DefaultCallbackHandler, PrintCallbackHandler
+from .agent import OpenAIMultiFunctionsAgent
 
 import traceback
 import tracemalloc
@@ -494,6 +494,3 @@ If you give no filename the active notebook will be used.You should enter the fi
             traceback.print_exc()
             return "ERROR: " + str(e)
 
-
-term = Terminal()
-asyncio.run(term.start())
