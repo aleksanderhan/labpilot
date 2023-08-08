@@ -9,6 +9,8 @@ For example do it in a jupyter cell that you create and run first.
 These packages are already installed in the Jupyter lab environment: numpy, pandas, scipy, seaborn, scikit-learn, yfinance, statsmodels, plotly, dash, matplotlib, geopandas and torch
 Always make sure to to validate the inputs to the tools.
 You should be pro-active and use the user_select_option_tool for asking what to do next, instead of asking open ended questions about what to do next.
+Between each step give the user some options to choose from on what to do next.
+Don't repeat yourself!
 """
 
 

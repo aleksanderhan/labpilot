@@ -1,21 +1,23 @@
-# labpilot
+# Labpilot
 Copilot for jupyter lab
 
 We are bringing "comment driven development" back in vouge and brushing off its bad reputation!
 
-Refactor feature:
+### Refactor feature:
+Use special comments, ´#@´ to steer the llm to write the code you want.
 
 ![Refactor example](docs/refactor.gif)
 
-Bugs in your code?
+### Bugs in your code?
 
 ![Debug example](docs/debug.gif)
 
-Need an explanation?
+### Need an explanation?
 
 ![Explain example](docs/explain.gif)
 
-Semi-autogpt feature:
+### Semi-autogpt feature:
+Give the agent a goal, and let it do its magic.
 
 ![Semi-autogpt example](docs/semi-autogpt.gif)
 

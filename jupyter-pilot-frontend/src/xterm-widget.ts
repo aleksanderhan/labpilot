@@ -15,7 +15,7 @@ import { CodeCellModel, MarkdownCellModel } from "@jupyterlab/cells"
 
 import SharedService from './shared-service'
 import Spinner from "./spinner"
-import getCellOutput from './cell-utils'
+import { getCellOutput, CodeBuffer } from './cell-utils'
 
 
 const xtermjsTheme = {
@@ -361,6 +361,14 @@ export class XtermWidget extends Widget {
       const notebook = notebookPanel.content
       const cellModel = notebook.model.cells.get(index)
       if (cellModel instanceof CodeCellModel) {
+        const initial_code = cellModel.value.text
+        // Save initial code from active cell
+        if ((cellModel as any).code_buffer == null) { 
+          (cellModel as any).code_buffer = new CodeBuffer();
+        }
+        (cellModel as any).code_buffer.addUndo(initial_code);
+        (cellModel as any).code_buffer.clearRedoBuffer();
+
         cellModel.value.text = code
         data = {
           "message": "Edited code cell at index " + index + " successfully."
@@ -442,7 +450,7 @@ export class XtermWidget extends Widget {
             }
           };
           sessionContext.statusChanged.connect(slot)
-        });
+        })
 
         // Run the cell.
         this.app.commands.execute('notebook:run-cell')

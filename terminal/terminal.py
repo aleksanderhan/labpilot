@@ -133,7 +133,7 @@ class Terminal(object):
             self.get_edit_markdown_cell_tool(websocket),
             self.get_run_code_cell_tool(websocket),
             self.get_delete_cell_tool(websocket),
-            self.get_read_notebook_summary(websocket)
+            self.get_read_notebook_summary_tool(websocket)
         ]
 
         extra_prompt_messages = [
@@ -460,7 +460,7 @@ This tool cannot delete files! You should enter the index of the cell you want t
             traceback.print_exc()
             return "ERROR: " + str(e)
 
-    def get_read_notebook_summary(self, default_ws):
+    def get_read_notebook_summary_tool(self, default_ws):
         return StructuredTool.from_function(
             func=lambda filename=None: self.read_notebook_summary_tool(default_ws, filename),
             coroutine=lambda filename=None: self.read_notebook_summary_tool(default_ws, filename),

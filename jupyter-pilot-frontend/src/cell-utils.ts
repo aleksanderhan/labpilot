@@ -1,7 +1,7 @@
 import { CodeCellModel } from '@jupyterlab/cells'
 
 
-export default function getCellOutput(cellModel: CodeCellModel): any {
+export function getCellOutput(cellModel: CodeCellModel): any {
     // Getting all the errors from the cell execution output
     const errors: Array<string> = []
     const out: Array<string> = []
@@ -43,5 +43,31 @@ export default function getCellOutput(cellModel: CodeCellModel): any {
     return {
       "errorText": errors.join("\n"),
       "outputText": out.join("\n")
+    }
+  }
+
+
+  export class CodeBuffer {
+    private undoBuffer: Array<string> = [];
+    private redoBuffer: Array<string> = [];
+  
+    public getUndo(): string {
+      return this.undoBuffer.pop();
+    }
+  
+    public getRedo(): string {
+      return this.redoBuffer.pop();
+    }
+  
+    public addUndo(code: string): void {
+      this.undoBuffer.push(code);
+    }
+  
+    public addRedo(code: string): void {
+      this.redoBuffer.push(code);
+    }
+  
+    public clearRedoBuffer(): void {
+      this.redoBuffer = [];
     }
   }

@@ -19,7 +19,7 @@ import { markedHighlight } from "marked-highlight";
 import hljs from 'highlight.js';
 import DOMPurify from 'dompurify';
 
-import getCellOutput from './cell-utils';
+import { getCellOutput, CodeBuffer } from './cell-utils';
 import SharedService from './shared-service';
 
 
@@ -359,32 +359,6 @@ function redo(notebookPanel: NotebookPanel) {
     }
   } else {
     console.log("no code block");
-  }
-}
-
-
-class CodeBuffer {
-  private undoBuffer: Array<string> = [];
-  private redoBuffer: Array<string> = [];
-
-  public getUndo(): string {
-    return this.undoBuffer.pop();
-  }
-
-  public getRedo(): string {
-    return this.redoBuffer.pop();
-  }
-
-  public addUndo(code: string): void {
-    this.undoBuffer.push(code);
-  }
-
-  public addRedo(code: string): void {
-    this.redoBuffer.push(code);
-  }
-
-  public clearRedoBuffer(): void {
-    this.redoBuffer = [];
   }
 }
 
