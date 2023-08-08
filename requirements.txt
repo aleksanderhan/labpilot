@@ -4,7 +4,7 @@ tiktoken
 openai
 backoff
 milvus
-langchain==0.0.251
+langchain==0.0.258
 pydantic
 websockets
 faiss-cpu

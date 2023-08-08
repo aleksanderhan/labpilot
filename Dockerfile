@@ -80,13 +80,11 @@ COPY ./tutorial_files/eth_price.csv .
 
 ENV PYTHONUNBUFFERED=1
 
-
-COPY ./terminal/* /app/install/
-
 ENTRYPOINT ["/usr/bin/tini", "--"]
 EXPOSE 8888
 EXPOSE 8080
+EXPOSE 8081
 
-CMD ["sh", "-c", "python3 -u /app/install/terminal.py & jupyter lab --port=8888 --no-browser --ip=0.0.0.0 --allow-root"]
+CMD ["sh", "-c", "jupyter lab --port=8888 --no-browser --ip=0.0.0.0 --allow-root"]
 
 
