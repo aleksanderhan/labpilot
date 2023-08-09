@@ -16,11 +16,13 @@ from langchain.memory import ChatMessageHistory, ConversationBufferMemory
 from langchain.prompts import MessagesPlaceholder, PromptTemplate
 from langchain.callbacks.manager import AsyncCallbackManager
 from langchain.chains import LLMChain
+from langchain_experimental.plan_and_execute import PlanAndExecute, load_agent_executor, load_chat_planner
+from langchain_experimental.plan_and_execute.executors.base import ChainExecutor
 from typing import List, Dict, Any, Union, Optional
 from pydantic import BaseModel, Field, BaseSettings
 from notebook.services.contents.filemanager import FileContentsManager
 
-from .prompt import agent_system_message, read_notebook_summary_template
+from .prompt import agent_system_message, read_notebook_summary_template, what_to_do_next_template
 from .callback import DefaultCallbackHandler, PrintCallbackHandler
 from .agent import OpenAIMultiFunctionsAgent
 
@@ -119,12 +121,13 @@ class Terminal(object):
         model += "-0613" # Better functions calling model
         self.model = model
         self.temp = temp
+        self.openai_api_key = openai_api_key
 
-        callback=DefaultCallbackHandler(websocket)
-        llm = ChatOpenAI(openai_api_key=openai_api_key, model=model, temperature=temp, streaming=True, callbacks=[callback])
+        llm = ChatOpenAI(openai_api_key=openai_api_key, model=model, temperature=temp, streaming=True, callbacks=[DefaultCallbackHandler(websocket)])
         tools = [
             ShellTool(name="shell_tool"),
             self.get_select_option_tool(websocket),
+            self.get_what_to_do_next_tool(websocket),
             self.get_create_new_notebook_tool(websocket),
             self.get_read_cell_tool(websocket),
             self.get_insert_code_cell_tool(websocket),
@@ -133,14 +136,20 @@ class Terminal(object):
             self.get_edit_markdown_cell_tool(websocket),
             self.get_run_code_cell_tool(websocket),
             self.get_delete_cell_tool(websocket),
-            self.get_read_notebook_summary_tool(websocket)
+            self.get_read_notebook_summary_tool(websocket),
         ]
 
         extra_prompt_messages = [
             SystemMessage(content=f"The current time and date is {time.strftime('%c')}"),
             MessagesPlaceholder(variable_name="memory"),
-            SystemMessage(content="Let's work the following out in a step by step way to be sure we have the right answer. Let's first understand the problem and devise a plan to solve the problem.")
+            SystemMessage(content="Previous steps:"),
+            MessagesPlaceholder(variable_name="previous_steps"),
+            SystemMessage(content="Current step:"),
+            MessagesPlaceholder(variable_name="current_step")
+            #SystemMessage(content="Let's work the following out in a step by step way to be sure we have the right answer. Let's first understand the problem and devise a plan to solve the problem.")
         ]
+
+        planner = load_chat_planner(llm)
 
         prompt = OpenAIMultiFunctionsAgent.create_prompt(system_message=SystemMessage(content=agent_system_message), extra_prompt_messages=extra_prompt_messages)
         agent = OpenAIMultiFunctionsAgent(
@@ -149,15 +158,18 @@ class Terminal(object):
             prompt=prompt,
             max_iterations=15, 
             verbose=True,
-            handle_parsing_errors=True
+            handle_parsing_errors=True,
+            input_variables=["previous_steps", "current_step", "agent_scratchpad", "memory"]
         )
-        self.agent = AgentExecutor.from_agent_and_tools(
+        agent_executor = AgentExecutor.from_agent_and_tools(
             agent=agent,
             tools=tools,
             return_intermediate_steps=False,
             handle_parsing_errors=True,
             memory=self.chat_history_memory
         )
+
+        self.agent = PlanAndExecute(planner=planner, executor=ChainExecutor(chain=agent_executor), verbose=True)
 
     async def primary_web_socket(self, websocket, path):
         async for message in websocket:
@@ -247,6 +259,30 @@ If the user aborts the operation just ask what to do next, don't use the tool ag
             answer = self.select_state.answer
             self.select_state = SharedState()
             return answer["message"]
+        except Exception as e:
+            traceback.print_exc()
+            return "ERROR: " + str(e)
+        
+    def get_what_to_do_next_tool(self, default_ws):
+        return StructuredTool.from_function(
+            func=lambda X: self.what_to_do_next_tool(default_ws),
+            coroutine=lambda X: self.what_to_do_next_tool(default_ws),
+            name="what_to_do_next_tool",
+            description="Used to get user feedback on what to do next.",
+        )
+
+    async def what_to_do_next_tool(self, default_ws):
+        try:
+            llm = ChatOpenAI(openai_api_key=self.openai_api_key, model=self.model, temperature=self.temp, streaming=True, callbacks=[DefaultCallbackHandler(default_ws)])
+            prompt_template = PromptTemplate(input_variables=["chat_history"], template=what_to_do_next_template)
+            chain = LLMChain(
+                llm=llm,
+                tools=[self.get_select_option_tool(default_ws)],
+                prompt=prompt_template,
+                verbose=True,
+                memory=self.chat_history_memory
+            )
+            chain.run()
         except Exception as e:
             traceback.print_exc()
             return "ERROR: " + str(e)
@@ -493,4 +529,3 @@ If you give no filename the active notebook will be used.You should enter the fi
         except Exception as e:
             traceback.print_exc()
             return "ERROR: " + str(e)
-
