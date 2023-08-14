@@ -34,8 +34,7 @@ RUN pip install \
     jupytext \
     jupyter-packaging \
     geopandas \
-    langchain \
-    milvus
+    langchain
 
 RUN npm cache clean -f
 RUN npm install -g n
