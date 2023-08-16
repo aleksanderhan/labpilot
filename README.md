@@ -4,7 +4,7 @@ Copilot for jupyter lab
 We are bringing "comment driven development" back in vouge and brushing off its bad reputation!
 
 ### Refactor feature:
-Use special comments, ´#@´ to steer the llm to write the code you want.
+Use special comments, `#@` to steer the llm to write the code you want.
 
 ![Refactor example](docs/refactor.gif)
 
@@ -30,5 +30,6 @@ Right now the easiest way to use this extension is to build (it takes a while th
 
 ## How to use labpilot
 - When you have started the container, navigate to localhost:8888 and use the `<TOKEN>` you started the container with, to log in.
-- Next, navigate to Settings > Advanced Setting Editor > Labpilot Settings - and enter your OpenAI api key: ![Settings](docs/settings.png)
+- Next, navigate to Settings > Advanced Setting Editor > Labpilot Settings - and enter your OpenAI api key (remember to add billing information to OpenAI since labpilot uses the chat completion api, which costs money): 
+![Settings](docs/settings.png)
 - After that I would follow the tutorial in the `tutorial.ipynb` file for a short introduction to labpilots features: ![Tutorial](docs/tutorial.png)
