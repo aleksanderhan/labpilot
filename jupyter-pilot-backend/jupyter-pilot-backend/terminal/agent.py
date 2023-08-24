@@ -232,6 +232,11 @@ class OpenAIMultiFunctionsAgent(BaseMultiActionAgent):
             messages, functions=self.functions, callbacks=callbacks
         )
         agent_decision = _parse_ai_message(predicted_message)
+
+        print()
+        print("AGENT DECISION:", agent_decision)
+        print()
+
         return agent_decision
 
     @classmethod

@@ -17,7 +17,7 @@ from langchain.prompts import MessagesPlaceholder, PromptTemplate
 from langchain.callbacks.manager import AsyncCallbackManager
 from langchain.chains import LLMChain
 from typing import List, Dict, Any, Union, Optional
-from pydantic import BaseModel, Field, BaseSettings
+from pydantic import BaseModel, Field
 from notebook.services.contents.filemanager import FileContentsManager
 
 from .prompt import agent_system_message, read_notebook_summary_template

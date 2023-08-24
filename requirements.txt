@@ -3,9 +3,7 @@ jupyter_kernel_gateway
 tiktoken
 openai
 backoff
-milvus
 langchain==0.0.258
-pydantic
 websockets
 faiss-cpu
 nbformat
