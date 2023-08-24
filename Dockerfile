@@ -11,6 +11,7 @@ RUN DEBIAN_FRONTEND=noninteractive apt update && apt install -y --no-install-rec
     wget \
     # Enable clipboard on Linux host systems
     xclip && \
+    apt clean && rm -rf /var/lib/apt/lists/* \
     ca-certificates \
     software-properties-common \
     apt-transport-https     
