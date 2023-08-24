@@ -135,17 +135,6 @@ def _parse_ai_message(message: BaseMessage) -> Union[List[AgentAction], AgentFin
         )
         final_tools.append(_tool)
 
-        # Ask user what to do next unless it's the user_select_option_tool beeing used
-        if tool != "user_select_option_tool":
-            log = f"\nInvoking: `what_to_do_next_tool`\n"
-            _tool = _FunctionsAgentAction(
-                tool="what_to_do_next_tool",
-                tool_input={},
-                log=log,
-                message_log=[SystemMessage(content="what_to_do_next_tool")],
-            )
-            final_tools.append(_tool)
-        
         return final_tools
 
     return AgentFinish(return_values={"output": message.content}, log=message.content)
@@ -196,7 +185,6 @@ class OpenAIMultiFunctionsAgent(BaseMultiActionAgent):
     def functions(self) -> List[dict]:
         functions = []
         for tool in self.tools:
-            if tool.name == "what_to_do_next_tool": continue
             function = {
                 "name": tool.name,
                 "description": tool.description,
@@ -305,4 +293,3 @@ class OpenAIMultiFunctionsAgent(BaseMultiActionAgent):
             callback_manager=callback_manager,
             **kwargs,
         )
-    

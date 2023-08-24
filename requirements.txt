@@ -5,7 +5,6 @@ openai
 backoff
 milvus
 langchain==0.0.258
-langchain_experimental==0.0.8
 pydantic
 websockets
 faiss-cpu
