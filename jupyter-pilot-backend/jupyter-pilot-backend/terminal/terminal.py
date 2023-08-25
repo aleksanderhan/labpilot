@@ -7,20 +7,18 @@ import os
 import time
 from nbformat.v4 import new_notebook
 from langchain.chat_models import ChatOpenAI
-from langchain.agents import AgentType, AgentExecutor, initialize_agent
-from langchain.schema import LLMResult, AgentAction
 from langchain.tools import BaseTool, Tool, StructuredTool, ShellTool
-from langchain.tools.convert_to_openai import format_tool_to_openai_function
 from langchain.schema.messages import SystemMessage, AIMessage, HumanMessage
 from langchain.memory import ChatMessageHistory, ConversationBufferMemory
 from langchain.prompts import MessagesPlaceholder, PromptTemplate
 from langchain.callbacks.manager import AsyncCallbackManager
 from langchain.chains import LLMChain
 from typing import List, Dict, Any, Union, Optional
-from pydantic import BaseModel, Field, BaseSettings
+from langchain.pydantic_v1 import BaseModel, Field
 from notebook.services.contents.filemanager import FileContentsManager
+from langchain.agents import AgentExecutor
 
-from .prompt import agent_system_message, read_notebook_summary_template
+from .prompt import *
 from .callback import DefaultCallbackHandler, PrintCallbackHandler
 from .agent import OpenAIMultiFunctionsAgent
 
@@ -35,10 +33,6 @@ class SharedState:
     def __init__(self):
         self.answer = None
         self.has_answer = asyncio.Event()
-
-class SelectOptionInput(BaseModel):
-    question: str = Field(description="Question to ask the user")
-    options: List[str] = Field(description="Options for the user to select")
 
 class CreateNewNotebookInput(BaseModel):
     filename: str = Field(description="Required filename of the notebook.")
@@ -78,6 +72,7 @@ class DeleteCellInput(BaseModel):
 class ReadNotebookInput(BaseModel):
     filename: Optional[str] = Field(description="Optional filename of the notebook to read. If no filename is given, the active notebook will be used.")
 
+
 class MyContentsManager(FileContentsManager):
     def __init__(self, **kwargs):
         super(MyContentsManager, self).__init__(**kwargs)
@@ -98,7 +93,6 @@ class Terminal(object):
         self.agent = None
         self.chat_history_memory = ConversationBufferMemory(memory_key="memory", return_messages=True)
 
-        self.select_state = SharedState()
         self.create_notebook_state = SharedState()
         self.read_cell_state = SharedState()
         self.insert_code_state = SharedState()
@@ -124,7 +118,6 @@ class Terminal(object):
         llm = ChatOpenAI(openai_api_key=openai_api_key, model=model, temperature=temp, streaming=True, callbacks=[callback])
         tools = [
             ShellTool(name="shell_tool"),
-            self.get_select_option_tool(websocket),
             self.get_create_new_notebook_tool(websocket),
             self.get_read_cell_tool(websocket),
             self.get_insert_code_cell_tool(websocket),
@@ -189,10 +182,7 @@ but make sure to conform to the function calling format and validate the input t
         async for message in websocket:
             print("secondary_web_socket received message", message)
             data = json.loads(message)
-            if path == "/select":
-                self.select_state.answer = data
-                self.select_state.has_answer.set()
-            elif path == "/openNotebook":
+            if path == "/openNotebook":
                 self.create_notebook_state.answer = data
                 self.create_notebook_state.has_answer.set()
             elif path == "/readCell":
@@ -221,35 +211,6 @@ but make sure to conform to the function calling format and validate the input t
                 self.read_notebook_state.has_answer.set()
             else:
                 print(f"secondary_web_socket() - path {path} not recognized")
-        
-    def get_select_option_tool(self, default_ws):
-        return StructuredTool.from_function(
-            func=lambda question, options: self.user_select_option_tool(default_ws, question, options),
-            coroutine=lambda question, options: self.user_select_option_tool(default_ws, question, options),
-            name="user_select_option_tool",
-            description="""Useful when you want to ask the user a question with multiple options and one answer. Be certain to span most possible scenarios with the options.
-If the user aborts the operation just ask what to do next, don't use the tool again.""",
-            args_schema=SelectOptionInput
-        )
-
-    async def user_select_option_tool(self, default_ws, question, options):
-        try:
-            request = {
-                "request": {
-                    "question": question,
-                    "options": options
-                }, 
-                "start": True, 
-                "method": "select"
-            }
-            await default_ws.send(json.dumps(request))
-            await self.select_state.has_answer.wait()
-            answer = self.select_state.answer
-            self.select_state = SharedState()
-            return answer["message"]
-        except Exception as e:
-            traceback.print_exc()
-            return "ERROR: " + str(e)
 
     def get_create_new_notebook_tool(self, default_ws):
         return StructuredTool.from_function(

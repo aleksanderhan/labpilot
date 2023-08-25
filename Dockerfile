@@ -20,21 +20,9 @@ RUN apt-get update && apt-get install -y curl gnupg lsb-release
 
 
 RUN pip install \
-    numpy \
-    pandas \
-    scipy \
-    seaborn \
-    scikit-learn \
-    yfinance \
-    statsmodels \
-    plotly \
-    dash \
-    matplotlib \
     jupyterlab==3.6.4 \
     jupytext \
-    jupyter-packaging \
-    geopandas \
-    langchain
+    jupyter-packaging
 
 RUN npm cache clean -f
 RUN npm install -g n

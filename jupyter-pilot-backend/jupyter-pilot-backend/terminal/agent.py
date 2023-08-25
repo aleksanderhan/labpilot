@@ -1,14 +1,15 @@
 """Module implements an agent that uses OpenAI's APIs function enabled API."""
 import json
+import asyncio
 from dataclasses import dataclass
 from json import JSONDecodeError
-from typing import Any, List, Optional, Sequence, Tuple, Union
+from typing import Any, Dict, List, Optional, Sequence, Tuple, Union
 
-from pydantic import root_validator
+from langchain.pydantic_v1 import root_validator
 
 from langchain.agents import BaseMultiActionAgent
 from langchain.callbacks.base import BaseCallbackManager
-from langchain.callbacks.manager import Callbacks
+from langchain.callbacks.manager import Callbacks, AsyncCallbackManagerForChainRun
 from langchain.chat_models.openai import ChatOpenAI
 from langchain.prompts.chat import (
     BaseMessagePromptTemplate,
@@ -232,6 +233,11 @@ class OpenAIMultiFunctionsAgent(BaseMultiActionAgent):
             messages, functions=self.functions, callbacks=callbacks
         )
         agent_decision = _parse_ai_message(predicted_message)
+
+        print()
+        print("AGENT DECISION:", agent_decision)
+        print()
+        
         return agent_decision
 
     @classmethod
@@ -293,3 +299,4 @@ class OpenAIMultiFunctionsAgent(BaseMultiActionAgent):
             callback_manager=callback_manager,
             **kwargs,
         )
+    
