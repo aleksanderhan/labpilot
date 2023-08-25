@@ -17,7 +17,7 @@ Use special comments, `#@` to steer the llm to write the code you want.
 ![Explain example](docs/explain.gif)
 
 ### Semi-autogpt feature:
-Give the agent a goal, and let it do its magic.
+Give the agent a goal, and let it do its magic. (This works best with gpt4)
 
 ![Semi-autogpt example](docs/semi-autogpt.gif)
 
