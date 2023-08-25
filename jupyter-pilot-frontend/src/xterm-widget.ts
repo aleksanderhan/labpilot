@@ -130,6 +130,8 @@ export class XtermWidget extends Widget {
   private select_options: Array<string> = []
   private select_index: number = null
 
+  private message: string = "";
+
   constructor(
     private sharedService: SharedService,
     private notebookTracker: INotebookTracker, 
@@ -207,33 +209,43 @@ export class XtermWidget extends Widget {
       case "readNotebook":
         this.readNotebook(response.request.filename)
         break
-      case "select":
-        this.spinner.stop()    
-        this.select_index = 0
-        this.select_question = response.request.question
-        this.select_options = response.request.options
-    
-        this.term.write("\x1B[?25l") // Hide cursor
-        this.term.write('\x1b[1A')  // Move line up
-        this.term.write("\r\x1b[K") // Delete line
-        this.renderSelect(false)
-        this.mode = "select"
-        break
       case "default":
       default:
         if (response.start === false && response.done === false) {
           if (response.message !== null) {
             this.term.write(color(response.message, "magenta"))
+            this.message += response.message
           }
         }
         if (response.done === true && this.waitingForAnswer === false) {
-          this.term.write("\n$ ")
+          const pattern = /(.*\?)((?:\n- .*)+)/
+          const match = this.message.match(pattern)
+          if (match) {
+            console.log(match)
+            this.spinner.stop()
+
+            this.select_index = 0
+            this.select_question = match[1]
+            this.select_options = match[2].trim()
+                                          .split('\n')
+                                          .map(option => option.substring(2).trim()) || []
+
+            this.term.write("\x1B[?25l") // Hide cursor
+            this.term.write('\x1b[1A')  // Move line up
+            this.term.write("\r\x1b[K") // Delete line
+            this.renderSelect()
+            this.mode = "select"
+          } else {
+            this.term.write("\n$ ")
+          }
+          this.message = ""
         }
         if (response.start === false) {
           this.waitingForAnswer = false
         }
     }
   }
+
 
   private systemError(message: string) {
     this.spinner.stop()
@@ -566,10 +578,9 @@ export class XtermWidget extends Widget {
     }
   }
 
-  private renderSelect(clear_select: boolean) {
-    if (clear_select) {
-      this.clearSelect()
-    }
+  private renderSelect() {
+    this.clearSelect()
+    
     this.term.writeln(color("\n" + this.select_question + " (ctrl+d for something else)", "magenta"))
     for (let i = 0; i < this.select_options.length; i++) {
       let opt = ""
@@ -599,10 +610,9 @@ export class XtermWidget extends Widget {
   private ctrlD() {
     if (this.mode === "select") {
       const data = {
-        "message": "Aborted operation by user.",
-        "system_message": true
+        "message": "None of the above."
       }
-      this.sendAnswer(data, "select")
+      this.ws.send(JSON.stringify(data))
       this.mode = "default"
     }
   }
@@ -648,7 +658,7 @@ export class XtermWidget extends Widget {
         const data = {
           "message": answer
         }
-        this.sendAnswer(data, "select")
+        this.ws.send(JSON.stringify(data))
         this.spinner = new Spinner(this.term)
         this.spinner.color("green")
         this.spinner.spin("dots")
@@ -695,7 +705,7 @@ export class XtermWidget extends Widget {
     switch (this.mode) {
       case "select":
         this.select_index = Math.min(this.select_options.length - 1, this.select_index + 1)
-        this.renderSelect(true)
+        this.renderSelect()
         break
       case "default":
       default:
@@ -717,7 +727,7 @@ export class XtermWidget extends Widget {
     switch (this.mode) {
       case "select":
         this.select_index = Math.max(0, this.select_index - 1)
-        this.renderSelect(true)
+        this.renderSelect()
         break
       case "default":
       default:
