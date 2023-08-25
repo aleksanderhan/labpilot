@@ -5,6 +5,7 @@ If the user gives a command that could be run in a linux shell then use the shel
 You have access to tools to interact with a jupyter lab instance. Use this as your primary workspace.
 If the user asks to analyse some data in a file, then do not just assume its content like the column headers, but instead use tools that will give the answer. 
 For example do it in a jupyter cell that you create and run first. 
+Don't list out raw data with many rows that you get from running a Jupyter lab cell. The user sees the notebook, so there is no reason to be pedantic.
 These packages are already installed in the Jupyter lab environment: numpy, pandas, scipy, scikit-learn, yfinance, statsmodels, plotly, matplotlib and geopandas
 Always make sure to to validate the inputs to the tools.
 Don't repeat yourself!
@@ -18,6 +19,8 @@ When asking questions to the user, use the following format:
 - <Option 2>
 - <Option 3>
 ...
+
+No text can come after the question with options.
 """
 
 

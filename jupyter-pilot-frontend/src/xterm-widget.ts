@@ -221,7 +221,6 @@ export class XtermWidget extends Widget {
           const pattern = /(.*\?)((?:\n- .*)+)/
           const match = this.message.match(pattern)
           if (match) {
-            console.log(match)
             this.spinner.stop()
 
             this.select_index = 0
@@ -231,8 +230,9 @@ export class XtermWidget extends Widget {
                                           .map(option => option.substring(2).trim()) || []
 
             this.term.write("\x1B[?25l") // Hide cursor
-            this.term.write('\x1b[1A')  // Move line up
-            this.term.write("\r\x1b[K") // Delete line
+            this.term.write("\n")
+            //this.term.write('\x1b[1A')  // Move line up
+            //this.term.write("\r\x1b[K") // Delete line
             this.renderSelect()
             this.mode = "select"
           } else {
@@ -246,6 +246,34 @@ export class XtermWidget extends Widget {
     }
   }
 
+  private renderSelect() {
+    this.clearSelect()
+    
+    this.term.writeln(color("\n" + this.select_question + " (ctrl+d to exit)", "magenta"))
+    for (let i = 0; i < this.select_options.length; i++) {
+      let opt = ""
+      if (i === this.select_index) {
+        opt = "> " + this.select_options[i]
+        this.term.writeln(color(opt, "cyan"))
+      } else {
+        opt = "  " + this.select_options[i]
+        this.term.writeln(opt)
+      }
+    }
+  }
+
+  private clearSelect() {
+    let extra_lines = 1
+    extra_lines += Math.ceil(((this.select_question.length + 17) / this.term.cols) - 1) // 17 char in additional text concatenated to select_question
+    this.select_options.forEach(element => {
+      extra_lines += Math.ceil(((element.length + 2) / this.term.cols) - 1)
+    })
+
+    for (let i = this.select_options.length + extra_lines; i >= 0; i--) {
+      this.term.write('\x1b[1A')  // Move line up
+      this.term.write("\r\x1b[K") // Delete line
+    }    
+  }
 
   private systemError(message: string) {
     this.spinner.stop()
@@ -578,39 +606,13 @@ export class XtermWidget extends Widget {
     }
   }
 
-  private renderSelect() {
-    this.clearSelect()
-    
-    this.term.writeln(color("\n" + this.select_question + " (ctrl+d for something else)", "magenta"))
-    for (let i = 0; i < this.select_options.length; i++) {
-      let opt = ""
-      if (i === this.select_index) {
-        opt = "> " + this.select_options[i]
-        this.term.writeln(color(opt, "cyan"))
-      } else {
-        opt = "  " + this.select_options[i]
-        this.term.writeln(opt)
-      }
-    }
-  }
-
-  private clearSelect() {
-    let extra_lines = 1
-    extra_lines += Math.ceil(((this.select_question.length + 28) / this.term.cols) - 1) // 28 char in additional text concatenated to select_question
-    this.select_options.forEach(element => {
-      extra_lines += Math.ceil(((element.length + 2) / this.term.cols) - 1)
-    })
-
-    for (let i = this.select_options.length + extra_lines; i >= 0; i--) {
-      this.term.write('\x1b[1A')  // Move line up
-      this.term.write("\r\x1b[K") // Delete line
-    }    
-  }
-
   private ctrlD() {
     if (this.mode === "select") {
       const data = {
-        "message": "None of the above."
+        "message": "None of the above.",
+        "model": this.sharedService.getModel(), 
+        "temp": this.sharedService.getTemp(),
+        "openai_api_key": this.sharedService.getOpenAIAPIKey()
       }
       this.ws.send(JSON.stringify(data))
       this.mode = "default"
@@ -656,7 +658,10 @@ export class XtermWidget extends Widget {
         const answer = this.select_options[this.select_index]
         this.term.writeln(color("\nYou selected: ", "cyan") + answer)
         const data = {
-          "message": answer
+          "message": answer,
+          "model": this.sharedService.getModel(), 
+          "temp": this.sharedService.getTemp(),
+          "openai_api_key": this.sharedService.getOpenAIAPIKey()
         }
         this.ws.send(JSON.stringify(data))
         this.spinner = new Spinner(this.term)
